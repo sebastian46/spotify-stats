@@ -80,6 +80,19 @@ function App() {
             });
     };
 
+    const shufflePlaylist = (playlistId) => {
+        console.log(`Shuffling playlist ${playlistId}`);
+        axios.get(`http://localhost:5000/playlist/shuffle/${playlistId}`, { withCredentials: true })
+            .then(response => {
+                console.log('Shuffled playlist received:', response);
+                setSelectedPlaylist(response.data);
+            })
+            .catch(error => {
+                console.error('Error shuffling playlist:', error);
+                setError('Failed to shuffle playlist. Please try again later.');
+            });
+    };
+
     const columns = React.useMemo(
         () => [
             {
@@ -213,6 +226,7 @@ function App() {
                     {playlists.map((playlist, index) => (
                         <li key={index}>
                             <button onClick={() => fetchStats(playlist.id)}>{playlist.name}</button>
+                            <button onClick={() => shufflePlaylist(playlist.id)}>Shuffle</button>
                         </li>
                     ))}
                 </ul>
@@ -221,31 +235,43 @@ function App() {
                         <h2>{selectedPlaylist.name}</h2>
                         <table {...getTableProps()} className="table">
                             <thead>
-                                {headerGroups.map(headerGroup => (
-                                    <tr key={headerGroup.id} {...headerGroup.getHeaderGroupProps()}>
-                                        {headerGroup.headers.map(column => (
-                                            <th key={column.id} {...column.getHeaderProps(column.getSortByToggleProps())}>
-                                                {column.render('Header')}
-                                                <span>
-                                                    {column.isSorted
-                                                        ? column.isSortedDesc
-                                                            ? <FaArrowDown />
-                                                            : <FaArrowUp />
-                                                        : ''}
-                                                </span>
-                                            </th>
-                                        ))}
-                                    </tr>
-                                ))}
+                                {headerGroups.map(headerGroup => {
+                                    const { key: headerGroupKey, ...headerGroupProps } = headerGroup.getHeaderGroupProps();
+                                    return (
+                                        <tr key={headerGroupKey} {...headerGroupProps}>
+                                            {headerGroup.headers.map(column => {
+                                                const { key: columnKey, ...columnProps } = column.getHeaderProps(column.getSortByToggleProps());
+                                                return (
+                                                    <th key={columnKey} {...columnProps}>
+                                                        {column.render('Header')}
+                                                        <span>
+                                                            {column.isSorted
+                                                                ? column.isSortedDesc
+                                                                    ? <FaArrowDown />
+                                                                    : <FaArrowUp />
+                                                                : ''}
+                                                        </span>
+                                                    </th>
+                                                );
+                                            })}
+                                        </tr>
+                                    );
+                                })}
                             </thead>
                             <tbody {...getTableBodyProps()}>
                                 {rows.map(row => {
                                     prepareRow(row);
+                                    const { key: rowKey, ...rowProps } = row.getRowProps();
                                     return (
-                                        <tr key={row.id} {...row.getRowProps()}>
-                                            {row.cells.map(cell => (
-                                                <td key={cell.column.id} {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                                            ))}
+                                        <tr key={rowKey} {...rowProps}>
+                                            {row.cells.map(cell => {
+                                                const { key: cellKey, ...cellProps } = cell.getCellProps();
+                                                return (
+                                                    <td key={cellKey} {...cellProps}>
+                                                        {cell.render('Cell')}
+                                                    </td>
+                                                );
+                                            })}
                                         </tr>
                                     );
                                 })}
