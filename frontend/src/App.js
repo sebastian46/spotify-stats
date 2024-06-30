@@ -6,13 +6,13 @@ import { FaArrowUp, FaArrowDown, FaCircle } from 'react-icons/fa';
 
 const getColor = (value, type) => {
     if (type === 'high') {
-        return value > 70 ? 'green' : value > 40 ? 'yellow' : 'red';
+        return value > 75 ? 'green' : value > 25 ? 'yellow' : 'red';
     }
     if (type === 'low') {
         return value < -12 ? 'red' : value < -7 ? 'yellow' : 'green';
     }
     if (type === 'decimal') {
-        return value > 0.7 ? 'green' : value > 0.5 ? 'yellow' : 'red';
+        return value > 0.75 ? 'green' : value > 0.25 ? 'yellow' : 'red';
     }
     return 'gray';
 };

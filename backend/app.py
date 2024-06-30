@@ -8,7 +8,7 @@ import spotipy
 from flask_cors import CORS
 from flask_session import Session
 from dotenv import load_dotenv
-from shuffle import create_balanced_playlist, fetch_audio_features_with_retry, fetch_all_tracks
+from shuffle import create_balanced_playlist, fetch_audio_features_with_retry, fetch_all_tracks, create_bell_curve_playlist
 from utils import is_banger, categorize_songs, interleave_songs
 
 # Load environment variables from .env file
@@ -163,10 +163,11 @@ def shuffle_playlist(playlist_id):
                 'valence': feature['valence'],
             })
 
-        balanced_playlist = create_balanced_playlist(tracks_with_features)
+        # new_playlst = create_balanced_playlist(tracks_with_features)
+        new_playlst = create_bell_curve_playlist(tracks_with_features)
         playlist_data = {
             'name': sp.playlist(playlist_id)['name'],
-            'tracks': balanced_playlist
+            'tracks': new_playlst
         }
 
         return jsonify(playlist_data)

@@ -57,3 +57,27 @@ def create_balanced_playlist(tracks):
     balanced_playlist = interleave_songs(bangers, slow_songs, happy_songs, neutral_songs)
     
     return balanced_playlist
+
+def create_bell_curve_playlist(tracks):
+    # Sort tracks by the combined value of energy and valence
+    sorted_tracks = sorted(tracks, key=lambda x: x['energy'] + abs(0.5-x['valence']) + x['danceability'])
+
+    # Calculate the number of tracks for each section
+    n = len(sorted_tracks)
+    low_count = n // 3
+    mid_count = n - 2 * low_count
+
+    # Split tracks into low, mid, and high sections
+    low_tracks = sorted_tracks[:low_count]
+    mid_tracks = sorted_tracks[low_count:low_count + mid_count]
+    high_tracks = sorted_tracks[low_count + mid_count:]
+
+    # Shuffle each section to ensure some randomness within each segment
+    random.shuffle(low_tracks)
+    random.shuffle(mid_tracks)
+    random.shuffle(high_tracks)
+
+    # Create the final playlist by arranging the sections in a bell curve
+    playlist = low_tracks[:low_count//2] + mid_tracks[:len(mid_tracks)//2] + high_tracks + mid_tracks[len(mid_tracks)//2:] + low_tracks[low_count//2:]
+    
+    return playlist
