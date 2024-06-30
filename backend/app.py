@@ -94,24 +94,25 @@ def stats(playlist_id):
             return "No tracks found", 404
 
         logging.debug(f'Total tracks fetched: {len(tracks)}')
-        track_ids = [track['track']['id'] for track in tracks if track['track']]
+        track_ids = [track['track']['id'] for track in tracks if track['track'] and track['track']['id']]
         features = fetch_audio_features_with_retry(sp, track_ids)
 
         tracks_with_features = []
         for track, feature in zip(tracks, features):
             track_info = track['track']
-            tracks_with_features.append({
-                'name': track_info['name'],
-                'artist': track_info['artists'][0]['name'],
-                'album': track_info['album']['name'],
-                'duration_ms': track_info['duration_ms'],
-                'popularity': track_info['popularity'],
-                'tempo': feature['tempo'],
-                'energy': feature['energy'],
-                'danceability': feature['danceability'],
-                'loudness': feature['loudness'],
-                'valence': feature['valence'],
-            })
+            if track_info and feature:  # Ensure both track_info and feature are not None
+                tracks_with_features.append({
+                    'name': track_info['name'],
+                    'artist': track_info['artists'][0]['name'],
+                    'album': track_info['album']['name'],
+                    'duration_ms': track_info['duration_ms'],
+                    'popularity': track_info['popularity'],
+                    'tempo': feature['tempo'],
+                    'energy': feature['energy'],
+                    'danceability': feature['danceability'],
+                    'loudness': feature['loudness'],
+                    'valence': feature['valence'],
+                })
 
         playlist_data = {
             'name': sp.playlist(playlist_id)['name'],
@@ -144,24 +145,25 @@ def shuffle_playlist(playlist_id):
             return "No tracks found", 404
 
         logging.debug(f'Total tracks fetched: {len(tracks)}')
-        track_ids = [track['track']['id'] for track in tracks if track['track']]
+        track_ids = [track['track']['id'] for track in tracks if track['track'] and track['track']['id']]
         features = fetch_audio_features_with_retry(sp, track_ids)
 
         tracks_with_features = []
         for track, feature in zip(tracks, features):
             track_info = track['track']
-            tracks_with_features.append({
-                'name': track_info['name'],
-                'artist': track_info['artists'][0]['name'],
-                'album': track_info['album']['name'],
-                'duration_ms': track_info['duration_ms'],
-                'popularity': track_info['popularity'],
-                'tempo': feature['tempo'],
-                'energy': feature['energy'],
-                'danceability': feature['danceability'],
-                'loudness': feature['loudness'],
-                'valence': feature['valence'],
-            })
+            if track_info and feature:  # Ensure both track_info and feature are not None
+                tracks_with_features.append({
+                    'name': track_info['name'],
+                    'artist': track_info['artists'][0]['name'],
+                    'album': track_info['album']['name'],
+                    'duration_ms': track_info['duration_ms'],
+                    'popularity': track_info['popularity'],
+                    'tempo': feature['tempo'],
+                    'energy': feature['energy'],
+                    'danceability': feature['danceability'],
+                    'loudness': feature['loudness'],
+                    'valence': feature['valence'],
+                })
 
         # new_playlst = create_balanced_playlist(tracks_with_features)
         new_playlst = create_bell_curve_playlist(tracks_with_features)
