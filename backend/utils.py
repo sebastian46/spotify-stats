@@ -37,3 +37,38 @@ def interleave_songs(*categories):
             if category:
                 interleaved.append(category.pop(0))
     return interleaved
+
+# Function to generate the vibe pattern
+def generate_playlist_vibes(num_songs):
+    if num_songs <= 5:
+        return ['Low', 'Mid', 'High', 'Mid', 'Low']
+    
+    pattern = ['Low']
+    mid_high_alternation = True  # To control Mid-High alternation in the middle
+    songs_placed = 1
+    
+    while songs_placed < num_songs - 1:
+        # Add Low-Mid-High pattern at the start and end
+        if songs_placed < num_songs / 4 or songs_placed > num_songs * 3/4:
+            if songs_placed % 2 == 0:
+                pattern.append('Low')
+            else:
+                pattern.append('Mid')
+            songs_placed += 1
+        # Mid-High alternation in the middle
+        else:
+            if mid_high_alternation:
+                pattern.append('High')
+                songs_placed += 1
+            else:
+                if songs_placed % 3 == 0:
+                    pattern.append('Low')
+                else:
+                    pattern.append('Mid')
+                songs_placed += 1
+            mid_high_alternation = not mid_high_alternation
+
+    # Ensure the pattern ends with Low
+    pattern.append('Low')
+    
+    return pattern

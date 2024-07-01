@@ -2,7 +2,7 @@ import logging
 import time
 import random
 import spotipy
-from utils import is_banger, categorize_songs, interleave_songs
+from utils import generate_playlist_vibes, is_banger, categorize_songs, interleave_songs
 
 # Function to fetch all tracks in a playlist in batches of 100
 def fetch_all_tracks(sp, playlist_id):
@@ -59,25 +59,61 @@ def create_balanced_playlist(tracks):
     return balanced_playlist
 
 def create_bell_curve_playlist(tracks):
-    # Sort tracks by the combined value of energy and valence
-    sorted_tracks = sorted(tracks, key=lambda x: x['energy'] + abs(0.5-x['valence']) + x['danceability'])
+    weights = {
+        'energy': 0.4,
+        'danceability': 0.4,
+        'valence': 0.2,
+    }
 
-    # Calculate the number of tracks for each section
+    max_energy = 1
+    max_danceability = 1
+    max_valence = 0.5
+    # Sort tracks by the combined value of energy and valence
+    sorted_tracks = sorted(
+        tracks, 
+        key=lambda x: (
+            weights['energy'] * (x['energy'] / max_energy) +
+            weights['danceability'] * (x['danceability'] / max_danceability) +
+            weights['valence'] * (abs(0.5-x['valence']) / max_valence)
+        )
+    )
+
+    # Generate the vibe pattern
     n = len(sorted_tracks)
-    low_count = n // 3
-    mid_count = n - 2 * low_count
+    vibe_pattern = generate_playlist_vibes(n)
+
+    # Count the number of each vibe in the pattern
+    low_count = vibe_pattern.count('Low')
+    mid_count = vibe_pattern.count('Mid')
+    high_count = vibe_pattern.count('High')
 
     # Split tracks into low, mid, and high sections
     low_tracks = sorted_tracks[:low_count]
     mid_tracks = sorted_tracks[low_count:low_count + mid_count]
     high_tracks = sorted_tracks[low_count + mid_count:]
 
-    # Shuffle each section to ensure some randomness within each segment
-    random.shuffle(low_tracks)
-    random.shuffle(mid_tracks)
-    random.shuffle(high_tracks)
+    # Create the final playlist by arranging the sections according to the vibe pattern
+    playlist = []
+    low_index, mid_index, high_index = 0, 0, 0
+    mid = len(vibe_pattern) // 3
+    for i, vibe in enumerate(vibe_pattern):
+        if vibe == 'Low':
+            if mid < i and i < mid * 2:  # Middle of playlist
+                playlist.append(low_tracks[low_count - 1 - low_index])
+            else:  # Second half of the pattern
+                playlist.append(low_tracks[low_index])
+            low_index += 1
+        elif vibe == 'Mid':
+            if mid < i and i < mid * 2:  # Middle of playlist
+                playlist.append(mid_tracks[mid_count - 1 - mid_index])
+            else:  # Second half of the pattern
+                playlist.append(mid_tracks[mid_index])
+            mid_index += 1
+        elif vibe == 'High':
+            if mid < i and i < mid * 2:  # Middle of playlist
+                playlist.append(high_tracks[high_count - 1 - high_index])
+            else:  # Second half of the pattern
+                playlist.append(high_tracks[high_index])
+            high_index += 1
 
-    # Create the final playlist by arranging the sections in a bell curve
-    playlist = low_tracks[:low_count//2] + mid_tracks[:len(mid_tracks)//2] + high_tracks + mid_tracks[len(mid_tracks)//2:] + low_tracks[low_count//2:]
-    
     return playlist
