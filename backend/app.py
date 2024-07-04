@@ -8,7 +8,7 @@ import spotipy
 from flask_cors import CORS
 from flask_session import Session
 from dotenv import load_dotenv
-from shuffle import create_balanced_playlist, fetch_audio_features_with_retry, fetch_all_tracks, create_bell_curve_playlist
+from shuffle import create_balanced_playlist, fetch_audio_features_with_retry, fetch_all_tracks, create_bell_curve_playlist, get_artist_to_genres
 from utils import is_banger, categorize_songs, interleave_songs
 
 # Load environment variables from .env file
@@ -148,6 +148,8 @@ def shuffle_playlist(playlist_id):
         logging.debug(f'Total tracks fetched: {len(tracks)}')
         track_ids = [track['track']['id'] for track in tracks if track['track'] and track['track']['id']]
         features = fetch_audio_features_with_retry(sp, track_ids)
+        artist_ids = [track['track']['artists'][0]['id'] for track in tracks if track['track'] and track['track']['artists']]
+        artist_to_genre = get_artist_to_genres(sp, artist_ids)
 
         tracks_with_features = []
         for track, feature in zip(tracks, features):
@@ -165,6 +167,7 @@ def shuffle_playlist(playlist_id):
                     'danceability': feature['danceability'],
                     'loudness': feature['loudness'],
                     'valence': feature['valence'],
+                    'genre': ', '.join(artist_to_genre.get(track_info['artists'][0]['id'], ['N/A'])),
                 })
 
         # new_playlst = create_balanced_playlist(tracks_with_features)

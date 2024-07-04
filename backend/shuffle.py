@@ -43,6 +43,28 @@ def fetch_audio_features_with_retry(sp, track_ids, retries=3, backoff_factor=1):
         time.sleep(0.2)  # Delay of 0.2 second between requests to respect rate limit
     return all_features
 
+def get_artist_to_genres(sp, artist_ids, retries=3, backoff_factor=1):
+    artist_to_genres = {}
+    for i in range(0, len(artist_ids), 50):
+        batch = artist_ids[i:i + 50]
+        for attempt in range(retries):
+            try:
+                response = sp.artists(batch)
+                for artist in response['artists']:
+                    artist_to_genres[artist['id']] = artist['genres']
+                break
+            except spotipy.exceptions.SpotifyException as e:
+                if e.http_status == 429:
+                    retry_after = int(e.headers.get('Retry-After', 1))  # Default to 1 second if not provided
+                    logging.warning(f"Rate limited by Spotify API. Retrying after {retry_after} seconds...")
+                    time.sleep(retry_after * (2 ** attempt))  # Exponential backoff
+                else:
+                    raise e
+        else:
+            raise Exception("Max retries exceeded")
+        time.sleep(0.2)  # Delay of 0.2 second between requests to respect rate limit
+    return artist_to_genres
+
 # Function to create a balanced playlist
 def create_balanced_playlist(tracks):
     bangers, slow_songs, happy_songs, neutral_songs = categorize_songs(tracks)

@@ -3,13 +3,13 @@ import { FaArrowUp, FaArrowDown, FaCircle } from 'react-icons/fa';
 
 const getColor = (value, type) => {
     if (type === 'high') {
-        return value > 75 ? 'green' : value > 25 ? 'yellow' : 'red';
+        return value > 80 ? 'green' : value > 40 ? 'yellow' : 'red';
     }
     if (type === 'low') {
         return value < -12 ? 'red' : value < -7 ? 'yellow' : 'green';
     }
     if (type === 'decimal') {
-        return value > 0.75 ? 'green' : value > 0.25 ? 'yellow' : 'red';
+        return value > 0.80 ? 'green' : value > 0.40 ? 'yellow' : 'red';
     }
     return 'gray';
 };
@@ -83,7 +83,7 @@ export const columns = [
         Cell: ({ value }) => (
             <span>
                 <FaCircle style={{ color: getColor(value, 'high') }} />
-                {value}
+                {value.toFixed(0)}
             </span>
         ),
         sortType: (a, b) => parseFloat(a.original.tempo) - parseFloat(b.original.tempo),
@@ -94,7 +94,7 @@ export const columns = [
         Cell: ({ value }) => (
             <span>
                 <FaCircle style={{ color: getColor(value, 'decimal') }} />
-                {value}
+                {(value*100).toFixed(1)}
             </span>
         ),
         sortType: (a, b) => parseFloat(a.original.energy) - parseFloat(b.original.energy),
@@ -105,7 +105,7 @@ export const columns = [
         Cell: ({ value }) => (
             <span>
                 <FaCircle style={{ color: getColor(value, 'decimal') }} />
-                {value}
+                {(value*100).toFixed(1)}
             </span>
         ),
         sortType: (a, b) => parseFloat(a.original.danceability) - parseFloat(b.original.danceability),
@@ -116,7 +116,7 @@ export const columns = [
         Cell: ({ value }) => (
             <span>
                 <FaCircle style={{ color: getColor(value, 'low') }} />
-                {value}
+                {value.toFixed(2)}
             </span>
         ),
         sortType: (a, b) => parseFloat(a.original.loudness) - parseFloat(b.original.loudness),
@@ -127,7 +127,7 @@ export const columns = [
         Cell: ({ value }) => (
             <span>
                 <FaCircle style={{ color: getColor(value, 'decimal') }} />
-                {value}
+                {(value*100).toFixed(0)}
             </span>
         ),
         sortType: (a, b) => parseFloat(a.original.valence) - parseFloat(b.original.valence),
@@ -140,17 +140,22 @@ export const columns = [
             return getVibe(tempo, energy, danceability, loudness, valence);
         },
     },
+    // {
+    //     Header: 'Banger',
+    //     accessor: 'banger',
+    //     Cell: ({ row }) => {
+    //         const { tempo, energy, danceability, loudness, valence } = row.original;
+    //         return isBanger(tempo, energy, danceability, loudness, valence) ? 'Yes' : 'No';
+    //     },
+    //     sortType: (a, b) => {
+    //         const aValue = isBanger(a.original.tempo, a.original.energy, a.original.danceability, a.original.loudness, a.original.valence) ? 1 : 0;
+    //         const bValue = isBanger(b.original.tempo, b.original.energy, b.original.danceability, b.original.loudness, b.original.valence) ? 1 : 0;
+    //         return aValue - bValue;
+    //     },
+    // },
     {
-        Header: 'Banger',
-        accessor: 'banger',
-        Cell: ({ row }) => {
-            const { tempo, energy, danceability, loudness, valence } = row.original;
-            return isBanger(tempo, energy, danceability, loudness, valence) ? 'Yes' : 'No';
-        },
-        sortType: (a, b) => {
-            const aValue = isBanger(a.original.tempo, a.original.energy, a.original.danceability, a.original.loudness, a.original.valence) ? 1 : 0;
-            const bValue = isBanger(b.original.tempo, b.original.energy, b.original.danceability, b.original.loudness, b.original.valence) ? 1 : 0;
-            return aValue - bValue;
-        },
+        Header: 'Genre',
+        accessor: 'genre',
+        Cell: ({ value }) => value || 'N/A',
     },
 ];
