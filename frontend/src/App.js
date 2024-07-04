@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './App.css';
 import PlaylistTable from './components/PlaylistTable';
+import StatsWidget from './components/StatsWidget';
+import GenresWidget from './components/GenresWidget';
+import PlaylistWidget from './components/PlaylistWidget';
 
 function App() {
     const [playlists, setPlaylists] = useState([]);
@@ -59,6 +62,19 @@ function App() {
             <div>
                 {error && <p>{error}</p>}
                 <h2>Playlists</h2>
+                <div className="playlist-container">
+                    <div className="playlist-widget">
+                        {playlists.map((playlist, index) => (
+                            <PlaylistWidget
+                                key={index}
+                                playlist={playlist}
+                                onView={fetchStats}
+                                onShuffle={shufflePlaylist}
+                            />
+                        ))}
+                    </div>
+                </div>
+                {/* <h2>Playlists</h2>
                 <ul>
                     {playlists.map((playlist, index) => (
                         <li key={index}>
@@ -66,11 +82,15 @@ function App() {
                             <button onClick={() => shufflePlaylist(playlist.id)}>Shuffle</button>
                         </li>
                     ))}
-                </ul>
+                </ul> */}
                 {selectedPlaylist && (
                     <div>
                         <h2>{selectedPlaylist.name}</h2>
-                        <PlaylistTable data={selectedPlaylist.tracks} />
+                        <div className="widgets-container">
+                            <StatsWidget stats={selectedPlaylist.stats[0]} />
+                            <GenresWidget genres={selectedPlaylist.genres} />
+                            <PlaylistTable data={selectedPlaylist.tracks} />
+                        </div>
                     </div>
                 )}
             </div>

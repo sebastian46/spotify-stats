@@ -10,6 +10,7 @@ from flask_session import Session
 from dotenv import load_dotenv
 from shuffle import create_balanced_playlist, fetch_audio_features_with_retry, fetch_all_tracks, create_bell_curve_playlist, get_artist_to_genres
 from utils import is_banger, categorize_songs, interleave_songs
+from collections import Counter
 
 # Load environment variables from .env file
 load_dotenv()
@@ -117,7 +118,7 @@ def stats(playlist_id):
 
         playlist_data = {
             'name': sp.playlist(playlist_id)['name'],
-            'tracks': tracks_with_features
+            'tracks': tracks_with_features,
         }
 
         return jsonify(playlist_data)
@@ -155,6 +156,7 @@ def shuffle_playlist(playlist_id):
         for track, feature in zip(tracks, features):
             track_info = track['track']
             if track_info and feature:  # Ensure both track_info and feature are not None
+                genres = artist_to_genre.get(track_info['artists'][0]['id'], ['N/A'])
                 tracks_with_features.append({
                     'name': track_info['name'],
                     'artist': track_info['artists'][0]['name'],
@@ -167,14 +169,38 @@ def shuffle_playlist(playlist_id):
                     'danceability': feature['danceability'],
                     'loudness': feature['loudness'],
                     'valence': feature['valence'],
-                    'genre': ', '.join(artist_to_genre.get(track_info['artists'][0]['id'], ['N/A'])),
+                    'genre': ', '.join(genres),
+                    'genre_list': genres,
                 })
 
+        # Calculate averages
+        total_tempo = sum(track['tempo'] for track in tracks_with_features)
+        total_danceability = sum(track['danceability'] for track in tracks_with_features)
+        total_energy = sum(track['energy'] for track in tracks_with_features)
+        total_valence = sum(track['valence'] for track in tracks_with_features)
+        count = len(tracks_with_features)
+
+        playlist_stats = [{
+            'averageTempo': total_tempo / count,
+            'averageDanceability': total_danceability / count,
+            'averageEnergy': total_energy / count,
+            'averageValence': total_valence / count,
+        }]
+
+        # Count genres
+        all_genres = []
+        for track in tracks_with_features:
+            all_genres.extend(track['genre_list'])  # Extend the list with the genres of the track
+
+        genres_counter = Counter(all_genres).most_common(20)
+        
         # new_playlst = create_balanced_playlist(tracks_with_features)
         new_playlst = create_bell_curve_playlist(tracks_with_features)
         playlist_data = {
             'name': sp.playlist(playlist_id)['name'],
-            'tracks': new_playlst
+            'tracks': new_playlst,
+            'stats': playlist_stats,
+            'genres': genres_counter,
         }
 
         return jsonify(playlist_data)
