@@ -44,6 +44,11 @@ const isBanger = (tempo, energy, danceability, loudness, valence) => {
 
 export const columns = [
     {
+        Header: 'Cover',
+        accessor: 'album_cover',
+        Cell: ({ value }) => value ? <img src={value} alt="Album Cover" style={{ width: '50px' }} /> : 'No Cover',
+    },
+    {
         Header: 'Name',
         accessor: 'name',
     },
